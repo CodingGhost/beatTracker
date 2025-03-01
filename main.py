@@ -27,6 +27,11 @@ import time
 
 np.seterr(invalid='ignore')
 
+####SETTINGS####
+min_tempo=100
+max_tempo=200
+
+
 
 # start operation center process here  
 def operation_center(prog_start_time,                     \
@@ -53,6 +58,8 @@ def operation_center(prog_start_time,                     \
     ai_proc_sm_data_array = multiprocessing.Array('d', sm_audio_data_size)
     #ai_process_sm_data_queue = multiprocessing.Queue()
 
+
+    #audio device index can be added here.
     ai_process_main = multiprocessing.Process(target = aic.audio_interface_control,  \
                                               args = (ai_proc_sm_pstop,              \
                                                       ai_proc_sm_rec_running,        \
@@ -99,8 +106,8 @@ def operation_center(prog_start_time,                     \
         sm_start_time_i[wkr_idx] = multiprocessing.Value('d', 0)
         sm_w_control_run_i[wkr_idx] = multiprocessing.Value('i', 0)
         sm_w_control_kill_i[wkr_idx] = multiprocessing.Value('i', 0)
-        sm_w_control_min_bpm[wkr_idx] = multiprocessing.Value('d', 60)   # min tempo
-        sm_w_control_max_bpm[wkr_idx] = multiprocessing.Value('d', 170)  # max tempo
+        sm_w_control_min_bpm[wkr_idx] = multiprocessing.Value('d', min_tempo)   # min tempo
+        sm_w_control_max_bpm[wkr_idx] = multiprocessing.Value('d', max_tempo)  # max tempo
         sm_estimate_beat_time_o[wkr_idx] = multiprocessing.Array('d', 100)
         sm_estimate_beat_count_o[wkr_idx] = multiprocessing.Array('d', 100)
         sm_estimate_beat_data_len_o[wkr_idx] = multiprocessing.Value('i', 0)
@@ -236,7 +243,7 @@ def operation_center(prog_start_time,                     \
                 # clear job status
                 sm_w_status_job_done_o[wkr_idx].value = 0
                 
-                if (sm_estimate_beat_data_len_o < 6): # bad data case
+                if len(sm_estimate_beat_data_len_o) < 6: # bad data case
                     pass
                 
                 else: # good data case

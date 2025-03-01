@@ -17,9 +17,9 @@ import librosa
 
 
 def save_wave_16bit(data, file_name, rate):
-    # get the max value of int16 data
+    # get the max value of np.int16 data
     max_v = np.iinfo(np.int16).max
-    # convert float data into int16 format for saving
+    # convert float data into np.int16 format for saving
     librosa.output.write_wav(file_name,  (data * max_v).astype(np.int16), rate)
 
 
@@ -33,7 +33,7 @@ class record_service():
         self.SAMPLING_CHANNELS = 1
         self.SAMPLING_RATE = 44100
         self.MONITORING_SAMPLING_INPUT = False #False
-        self.NUM_SAMPLES = np.int(self.SAMPLING_RATE * np.float(self.SAMPLING_WINDOW))
+        self.NUM_SAMPLES = int(self.SAMPLING_RATE * float(self.SAMPLING_WINDOW))
         self.pyaud = pyaudio.PyAudio()
         self.sampling_is_running = False
         
@@ -46,7 +46,7 @@ class record_service():
         self.wf.setframerate(self.SAMPLING_RATE) 
         self.wf.writeframes("".join(save_data)) 
         self.wf.close()
-        print "file:", filename, "is saved."
+        print("file:", filename, "is saved.")
 
     def callback(self, in_data, frame_count, time_info, status):
         #global saved_sampling_frame
@@ -56,21 +56,22 @@ class record_service():
 
         return (in_data, pyaudio.paContinue)
 
-    def run_sampling_stream(self):
+    def run_sampling_stream(self,audio_device_index = None):
         #global sampling_is_running
         if (self.sampling_is_running == False):
             self.audio_stream = self.pyaud.open(format=pyaudio.paInt16,
                                                 channels=self.SAMPLING_CHANNELS,
                                                 rate=self.SAMPLING_RATE,
                                                 input=True,
+                                                input_device_index = audio_device_index,
                                                 output=self.MONITORING_SAMPLING_INPUT,
                                                 frames_per_buffer=self.NUM_SAMPLES,
                                                 stream_callback=self.callback)
             self.audio_stream.start_stream()
             self.sampling_is_running = True
-            print "[audio interface] Start recording."
+            print("[audio interface] Start recording.")
         else:    
-            print "[audio interface] Recording is already running"
+            print("[audio interface] Recording is already running")
 
         #self.recording_service_update()
         #print "sampling is Started."
@@ -82,8 +83,8 @@ class record_service():
             self.audio_stream.close()
             self.pyaud.terminate()
             self.sampling_is_running = False
-            print "[audio interface] Audio frame saved : {0}".format(self.saved_sampling_frame)
-            print "[audio interface] Stop recording."
+            print("[audio interface] Audio frame saved : {0}".format(self.saved_sampling_frame))
+            print("[audio interface] Stop recording.")
 #        else:
 #            print "Recording is already stopped"
 
@@ -138,7 +139,8 @@ def audio_interface_control(ai_proc_sm_pstop,
                             ai_proc_sm_data_chunk,
                             ai_proc_sm_data_chunk_size,
                             ai_proc_sm_data_array_end,
-                            ai_proc_sm_data_array
+                            ai_proc_sm_data_array,
+                            audio_device_index = None
                             ):
     # set recording service
     audio_service = record_service()
@@ -146,7 +148,7 @@ def audio_interface_control(ai_proc_sm_pstop,
 
     # start run recording    
     try :
-        audio_service.run_sampling_stream()
+        audio_service.run_sampling_stream(audio_device_index)
     except IOError:
         print ("[audio interface] Microphone is not ready!")
         audio_service.__init__()
@@ -168,8 +170,6 @@ def audio_interface_control(ai_proc_sm_pstop,
     #audio_service.save_data_2_file()
 
     print ("[audio interface] sampling string stopped.")
-
-
 
 # test program here
 if __name__ == '__main__':
@@ -205,7 +205,7 @@ if __name__ == '__main__':
 
     for i in range(0, 40):
         time.sleep(0.5)
-        print (ai_proc_sm_data_chunk.value * ai_proc_sm_data_chunk_size.value)
+        print((ai_proc_sm_data_chunk.value * ai_proc_sm_data_chunk_size.value))
 
   
     rec_audio_data = np.array(ai_proc_sm_data_array[0: ai_proc_sm_data_array_end.value])

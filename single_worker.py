@@ -57,7 +57,7 @@ def single_worker(sm_realtime_audio_i,                 \
             
             sm_w_status_is_idle_o.value = 0
             
-            act = madmom.features.beats.RNNDownBeatProcessor(fps=100)( np.asarray(sm_realtime_audio_i[:]) )
+            act = madmom.features.downbeats.RNNDownBeatProcessor(fps=100)( np.asarray(sm_realtime_audio_i[:]) )
 
             min_bpm_input = sm_w_control_min_bpm.value
             max_bpm_input = sm_w_control_max_bpm.value
@@ -99,6 +99,9 @@ def single_worker(sm_realtime_audio_i,                 \
     print ("[single worker] all single workers are killed.")
 
     # single worker process end here
+
+
+
 
 if __name__ == '__main__':
     
@@ -252,13 +255,3 @@ if __name__ == '__main__':
     time.sleep(0.1)
     
     print ("main program end here\n")
-
-
-
-
-
-
-
-
-
-

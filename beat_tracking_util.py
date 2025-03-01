@@ -22,8 +22,8 @@ def ext_beat_array(base_array, base_array_beat, beat_period):
     
     ary_len = 80
     # fill in beat count information
-    ext_beat_array_beat = np.zeros(ary_len).astype(np.int)
-    start_beat = np.int(base_array_beat[-1])
+    ext_beat_array_beat = np.zeros(ary_len).astype(int)
+    start_beat = int(base_array_beat[-1])
     for x in range(0, ary_len):
         if x == 0:
             ext_beat_array_beat[x] = start_beat
@@ -140,7 +140,7 @@ def get_avg_time_beat(binf_obj_list, beat_step_acc, end_idx, pridicted_beat_num)
     exp_beat_num = pridicted_beat_num
 
     list_len = len(beat_step_acc)
-    tmp_bcount_array = np.zeros(list_len).astype(np.int)
+    tmp_bcount_array = np.zeros(list_len).astype(int)
 
     for x in range (0, list_len):
         if x == 0 :
@@ -162,9 +162,9 @@ def get_avg_time_beat(binf_obj_list, beat_step_acc, end_idx, pridicted_beat_num)
 
     bcount_mix = np.hstack([tmp_bcount_array, np.array([1,2,3,4])])
     belements, bcounts = np.unique(bcount_mix, return_counts=True)
-    first_bcount = np.int(belements[np.argmax(bcounts)])
+    first_bcount = int(belements[np.argmax(bcounts)])
 
-    final_bcount_array = np.zeros(exp_beat_num).astype(np.int)
+    final_bcount_array = np.zeros(exp_beat_num).astype(int)
     start_beat = first_bcount
     for x in range(0, exp_beat_num):
         if x == 0:
