@@ -4,7 +4,7 @@ This repository contains the real-time beat tracking program which tracks the mu
 
 ## Prerequisites
 - Windows platform (Linux & OSX is not guaranteed)
-- Python 2.7
+- Python 3
 - Numpy
 - MADMOM (https://github.com/CPJKU/madmom)
 - Librosa (https://librosa.github.io/)
