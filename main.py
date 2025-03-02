@@ -30,7 +30,9 @@ np.seterr(invalid='ignore')
 ####SETTINGS####
 min_tempo=100
 max_tempo=200
-
+buf_time = 10.0
+loop_run_time = 900.0
+#######################
 
 
 # start operation center process here  
@@ -80,8 +82,8 @@ def operation_center(prog_start_time,                     \
 
 
     ### initialize workers ###
-    audio_buffer_len = 10.0
-    realtime_audio_array_size = int(samp_rate * audio_buffer_len) # 8 Sec. memory for audio
+    audio_buffer_len = buf_time
+    realtime_audio_array_size = int(samp_rate * audio_buffer_len)
     cpu_physical_cores = psutil.cpu_count(logical=False)
     num_of_wkrs = max(cpu_physical_cores - 1, 1)
 
@@ -168,7 +170,6 @@ def operation_center(prog_start_time,                     \
 
 
     # waiting for audio interface filling
-    buf_time = 10.0
 
     while (ai_proc_sm_data_array_end.value <= samp_rate * buf_time):
         time.sleep(1.0)
@@ -252,6 +253,10 @@ def operation_center(prog_start_time,                     \
                     beat_info_time_tmp = np.array(sm_estimate_beat_time_o[wkr_idx][0 : sm_estimate_beat_data_len_o[wkr_idx].value])
                 
                     job_done_obj = btu.single_job_result()
+
+                    if len(beat_info_beat_tmp) < 2 or len(beat_info_time_tmp) < 2: #prevent crash if no audio is captured
+                        break
+
                     job_done_obj.update_value(start_time_tmp, beat_info_beat_tmp, beat_info_time_tmp)
                     
                     if saved_job_result > 5:
@@ -288,8 +293,7 @@ def operation_center(prog_start_time,                     \
             
             # put input audio data into worker's shared memory
             try:
-                sm_realtime_audio_i[next_worker][0:realtime_audio_array_size] = \
-                               ai_proc_sm_data_array[(ai_proc_sm_data_array_end.value-realtime_audio_array_size) : ai_proc_sm_data_array_end.value]
+                sm_realtime_audio_i[next_worker][0:realtime_audio_array_size] = ai_proc_sm_data_array[(ai_proc_sm_data_array_end.value-realtime_audio_array_size) : ai_proc_sm_data_array_end.value] #Obacht: taking latest audio data here!
                              
                 # save worker run start time into worker
                 sm_start_time_i[next_worker].value = time.time() - prog_start_time - audio_buffer_len
@@ -328,13 +332,18 @@ def operation_center(prog_start_time,                     \
                 beat_step_diff_acc, beat_step_dif, beat_step_diff_min = \
                                 btu.get_beat_step_dif_list(job_result_list, avg_bprd, end_idx, avg_num)
 
+
                 predicted_beat_time, predicted_beat_count = \
                                 btu.get_avg_time_beat(job_result_list, beat_step_diff_acc, end_idx, pridicted_beat_num)
 
                 operation_proc_bperiod.value = avg_bprd
                 operation_proc_bpm.value = 60.0 / avg_bprd
                 
+                #obacht
+                if(len(predicted_beat_time) == 0):
+                    continue
                 #print (predicted_beat_time)
+                #invalid index to scalar variable
                 operation_proc_next_beat[0:pridicted_beat_num] = predicted_beat_time[0:pridicted_beat_num] #predicted_beat_time[0:pridicted_beat_num]
                 operation_proc_next_beat_count[0:pridicted_beat_num] = predicted_beat_count[0:pridicted_beat_num]
                 
@@ -409,7 +418,7 @@ if __name__ == '__main__':
 
 
 
-    loop_run_time = 90.0
+    
     
     refresh_loop_execed = 0
     refresh_period = 0.001

@@ -52,6 +52,7 @@ class record_service():
         #global saved_sampling_frame
         self.saved_sampling_frame += 1
         self.saved_sampling_data.append(in_data)
+        #obacht: unlimited memory usage.
         self.saved_sampling_data_str.append( np.fromstring(in_data, dtype=np.int16) )
 
         return (in_data, pyaudio.paContinue)

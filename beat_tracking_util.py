@@ -107,7 +107,8 @@ def get_beat_step_dif(matrix_input, matrix_base, beat_value):
                 beat_dist -= 1
             else:
                 #print("no hit, --")
-                beat_dist += 1 
+                beat_dist += 1
+    return (0.5,0.1) # assume 120bpm for invalid data at buffer start.
                 
                 
                 
@@ -145,14 +146,14 @@ def get_avg_time_beat(binf_obj_list, beat_step_acc, end_idx, pridicted_beat_num)
     for x in range (0, list_len):
         if x == 0 :
             sfifted_beat_n = beat_step_acc[x]
-            stacked_btime_matrix = binf_obj_list[end_idx-x].beat_time_abs_ext[0+sfifted_beat_n : exp_beat_num+sfifted_beat_n]
+            stacked_btime_matrix = np.atleast_2d(binf_obj_list[end_idx-x].beat_time_abs_ext[0+sfifted_beat_n : exp_beat_num+sfifted_beat_n])
             tmp_bcount_array[x] = binf_obj_list[end_idx-x].beat_count_ext[sfifted_beat_n]
         else:
             sfifted_beat_n = beat_step_acc[x]
             
             try:
-                stacked_btime_matrix = np.vstack ([stacked_btime_matrix, 
-                                                   binf_obj_list[end_idx-x].beat_time_abs_ext[0+sfifted_beat_n : exp_beat_num+sfifted_beat_n]])
+                stacked_btime_matrix = np.vstack ([stacked_btime_matrix, np.atleast_2d(binf_obj_list[end_idx-x].beat_time_abs_ext[0+sfifted_beat_n : exp_beat_num+sfifted_beat_n])])
+                                                   
             except ValueError:
                 pass
             
